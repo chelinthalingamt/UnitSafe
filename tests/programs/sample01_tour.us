@@ -1,0 +1,16 @@
+# sample 1: braking distance (the tour program from the build guide)
+unit m
+unit s
+
+fn stop_distance(v: m / s, a: m / s^2) -> m
+    return v ^ 2 / (2 * a)
+end
+
+let speed = 20 m / s
+let decel: m / s^2 = 5 m / s^2
+let d = stop_distance(speed, decel)
+if d > 30 m
+    print("too far")
+else
+    print(d)
+end

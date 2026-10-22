@@ -1,0 +1,6 @@
+# Review 2, demo 2: mixing kilograms and seconds is rejected before running
+unit kg
+unit s
+let mass = 5 kg
+let time = 3 s
+print(mass + time)

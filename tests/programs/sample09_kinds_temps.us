@@ -1,0 +1,20 @@
+# phase: 9
+# sample 9: quantity kinds and temperatures
+unit kg
+unit m
+unit s
+unit K
+unit N = kg * m / s^2
+kind torque
+kind energy
+unit J = N * m of energy
+unit degC = 1 K offset 273.15
+unit degF = 0.5555555555555556 K offset 255.37222222222223
+let tau: N * m of torque = 40 N * m
+let e: J = 10 N * 3 m
+print(tau + 2 * tau)
+print(e)
+let morning: degC = 15 degC
+let noon: degC = morning + 5 delta degC
+print(noon in degF)
+print(noon - morning in delta degF)

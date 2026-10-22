@@ -1,0 +1,8 @@
+# Review 3, demo 4: Celsius and Fahrenheit, readings and changes
+unit K
+unit degC = 1 K offset 273.15
+unit degF = 0.5555555555555556 K offset 255.37222222222223
+let morning: degC = 15 degC
+let noon: degC = morning + 5 delta degC
+print("noon:", noon, "=", noon in degF)
+print("it got warmer by", noon - morning in delta degF)

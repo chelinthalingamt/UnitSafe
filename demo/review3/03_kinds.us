@@ -1,0 +1,11 @@
+# Review 3, demo 3: torque and energy have the same unit but cannot be added
+unit kg
+unit m
+unit s
+unit N = kg * m / s^2
+kind torque
+kind energy
+unit J = N * m of energy
+let tau: N * m of torque = 40 N * m
+let work = 40 J
+print(tau + work)

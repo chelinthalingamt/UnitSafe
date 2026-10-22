@@ -1,0 +1,52 @@
+UnitSafe grammar (build guide "Language reference", including D19-D23)
+
+program      -> NEWLINE* ( statement NEWLINE+ )* EOF
+block        -> NEWLINE* ( statement NEWLINE+ )*
+
+statement    -> unitDecl | kindDecl | letStmt | assignStmt | printStmt
+              | ifStmt | whileStmt | fnDecl | returnStmt | callStmt
+
+unitDecl     -> "unit" NAME ( "=" unitDef )? ( "of" NAME )?        # "=" part: phase 6, "of": phase 8
+unitDef      -> NUMBER? unitExpr ( "offset" signedNumber )?           # offset: phase 9
+kindDecl     -> "kind" NAME                                           # phase 8
+
+letStmt      -> "let" NAME ( ":" unitAnn )? "=" expression
+assignStmt   -> NAME "=" expression
+printStmt    -> "print" "(" printArg ( "," printArg )* ")"           # D23
+printArg     -> expression ( "in" unitTarget )?                      # "in": phase 6 (D10)
+ifStmt       -> "if" expression NEWLINE block
+                ( "else" "if" expression NEWLINE block )*            # D21
+                ( "else" NEWLINE block )? "end"
+whileStmt    -> "while" expression NEWLINE block "end"
+fnDecl       -> "empirical"? "fn" NAME "(" params? ")" ( "->" unitAnn )? NEWLINE block "end"
+params       -> param ( "," param )*
+param        -> NAME ( ":" unitAnn )?
+returnStmt   -> "return" expression
+callStmt     -> call                                                   # D6
+
+unitAnn      -> "delta"? unitExpr ( "of" NAME )?
+unitTarget   -> "delta"? unitExpr
+
+expression   -> orExpr
+orExpr       -> andExpr ( "or" andExpr )*                              # D20
+andExpr      -> notExpr ( "and" notExpr )*
+notExpr      -> "not" notExpr | comparison
+comparison   -> sum ( compOp sum )?                                    # one comparison only
+compOp       -> "<" | ">" | "<=" | ">=" | "==" | "!="
+sum          -> term ( ( "+" | "-" ) term )*
+term         -> unary ( ( "*" | "/" ) unary )*
+unary        -> "-" unary | power                                      # D2
+power        -> factor ( "^" exponent )?                               # one ^ only (D3)
+exponent     -> "-"? factor
+factor       -> NUMBER unitAtom?                                       # unit literal (U3, D1, D17)
+              | STRING | "true" | "false"                              # D19
+              | call | NAME | "(" expression ")"                       # pi is a NAME (D22)
+unitAtom     -> "delta"? NAME ( "^" "-"? INTEGER )?                    # ^ taken only if an integer follows
+call         -> NAME "(" args? ")"
+args         -> expression ( "," expression )*
+
+unitExpr     -> unitFactor ( ( "*" | "/" ) unitFactor )*
+unitFactor   -> ( NAME | "1" | "(" unitExpr ")" ) ( "^" "-"? INTEGER )?
+signedNumber -> "-"? NUMBER
+
+INTEGER is a NUMBER token written with digits only.

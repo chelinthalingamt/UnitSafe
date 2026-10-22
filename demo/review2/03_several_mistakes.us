@@ -1,0 +1,12 @@
+# Review 2, demo 4: the checker reports every mistake at once (4 here)
+unit m
+unit s
+unit kg
+
+fn speed(d: m, t: s) -> m / s
+    return d / t
+end
+
+let v = speed(10 s, 100 m)
+let total = 5 kg + 2
+print(sqrt(9 m))

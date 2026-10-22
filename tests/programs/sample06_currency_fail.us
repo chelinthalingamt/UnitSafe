@@ -1,0 +1,6 @@
+# sample 6: an exchange rate used the wrong way round
+unit INR
+unit USD
+let rate = 83.2 INR / USD
+let price = 20 USD
+let in_rupees: INR = price / rate

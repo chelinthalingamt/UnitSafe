@@ -1,0 +1,9 @@
+# sample 4: the Mars Climate Orbiter mix-up, caught before running
+unit N
+unit s
+unit lbf
+let impulse_needed = 5000 N * s
+let thruster = 1100 lbf * s
+if thruster > impulse_needed
+    print("enough")
+end

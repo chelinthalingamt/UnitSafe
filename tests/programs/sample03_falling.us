@@ -1,0 +1,14 @@
+# sample 3: functions, while loops, sqrt, print with several values
+unit m
+unit s
+
+fn fall_time(h: m, g: m / s^2) -> s
+    return sqrt(2 * h / g)
+end
+
+let g = 9.8 m / s^2
+let h = 1 m
+while h < 1000 m
+    print("drop from", h, "takes", fall_time(h, g))
+    h = h * 10
+end

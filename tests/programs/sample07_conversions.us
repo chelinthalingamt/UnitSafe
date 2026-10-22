@@ -1,0 +1,15 @@
+# phase: 6
+# sample 7: conversions and nicknames
+unit m
+unit s
+unit kg
+unit km = 1000 m
+unit h = 3600 s
+unit N = kg * m / s^2
+let d = 150 km
+let t = 2 h
+print(d / t in km / h)
+print(d / t)
+let F: N = 2 kg * 3 m / s^2
+print(F)
+print(1 km + 500 m in km)

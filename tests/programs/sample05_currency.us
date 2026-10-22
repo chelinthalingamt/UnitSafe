@@ -1,0 +1,8 @@
+# sample 5: money in two currencies (D25)
+unit INR
+unit USD
+let rate = 83.2 INR / USD
+let price = 20 USD
+let fee = 150 INR
+print(price * rate + fee)
+print("total:", price * rate + fee)

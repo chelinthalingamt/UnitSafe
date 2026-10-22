@@ -1,0 +1,13 @@
+# sample 2: unit arithmetic (U3 to U7)
+unit m
+unit s
+unit kg
+let d = 120 m
+let t = 10 s
+let v = d / t
+print(v)
+print(v * 4 s)
+print(5 kg / 5 kg)
+print(2 * 5 kg)
+let a = 9.8 m / s^2
+print(a * 2 s)

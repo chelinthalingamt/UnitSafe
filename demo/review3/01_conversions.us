@@ -1,0 +1,8 @@
+# Review 3, demo 1: conversions and nicknames
+unit m
+unit s
+unit km = 1000 m
+unit h = 3600 s
+let d = 150 km
+let t = 2 h
+print("average speed:", d / t in km / h)

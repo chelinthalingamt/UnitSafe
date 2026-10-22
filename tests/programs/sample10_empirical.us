@@ -1,0 +1,14 @@
+# phase: 10
+# sample 10: an empirical formula, checked at its edges
+unit kg
+unit g = 0.001 kg
+unit W
+
+empirical fn metabolic(mass: kg) -> W
+    return 3.4 * mass ^ 0.75
+end
+
+let cat = 4000 g
+let p: W = metabolic(cat)
+print(p)
+print("mouse:", metabolic(20 g))

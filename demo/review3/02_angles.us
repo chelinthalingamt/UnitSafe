@@ -1,0 +1,3 @@
+# Review 3, demo 2: a bare number is never an angle
+print(sin(90 deg))
+print(sin(90))
