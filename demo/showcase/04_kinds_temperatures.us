@@ -1,0 +1,23 @@
+# Showcase 4: quantity kinds and temperatures
+unit kg
+unit m
+unit s
+unit K
+unit N = kg * m / s^2
+kind torque
+kind energy
+unit J = N * m of energy
+unit degC = 1 K offset 273.15
+unit degF = 0.5555555555555556 K offset 255.37222222222223
+
+let wrench: N * m of torque = 25 N * 0.4 m
+print("wrench torque:", wrench)
+let lift: J = 10 kg * 9.8 m / s^2 * 2 m
+print("lifting energy:", lift)
+
+let body: degC = 37 degC
+print("body temperature:", body, "=", body in degF)
+let fever: degC = body + 1.5 delta degC
+print("fever:", fever)
+print("rise:", fever - body in delta degF)
+print("in kelvin:", kelvin(body))

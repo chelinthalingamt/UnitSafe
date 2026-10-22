@@ -1,4 +1,4 @@
-"""Review demos: python demo.py review2   or   python demo.py review3"""
+"""Review demos: python demo.py showcase | review2 | review3"""
 import pathlib
 import subprocess
 import sys
@@ -10,6 +10,14 @@ STEPS = {
         ('2. kg + s is rejected, with its rule ID', ['run', 'demo/review2/02_mixup.us']),
         ('3. The generated Python has no unit code at run time', ['build', 'demo/review2/01_valid.us', '-o', 'demo/review2/01_valid.py']),
         ('4. Several mistakes, all reported at once', ['check', 'demo/review2/03_several_mistakes.us']),
+    ],
+    'showcase': [
+        ('1. A car trip: units, functions, if / else if, pi', ['run', 'demo/showcase/01_motion.us']),
+        ('2. Conversions and nicknames: km, h, min, N, J, W, kW', ['run', 'demo/showcase/02_conversions.us']),
+        ('3. Angles: ramps, slopes and rolling wheels', ['run', 'demo/showcase/03_angles.us']),
+        ('4. Quantity kinds and temperatures', ['run', 'demo/showcase/04_kinds_temperatures.us']),
+        ('5. Empirical formulas: speed of sound, metabolic rate', ['run', 'demo/showcase/05_empirical.us']),
+        ('6. Money in two currencies', ['run', 'demo/showcase/06_money.us']),
     ],
     'review3': [
         ('1. Conversions: km and hours in, km / h out', ['run', 'demo/review3/01_conversions.us']),

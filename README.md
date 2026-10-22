@@ -40,6 +40,7 @@ The tests use only the standard library (`unittest`).
 ## Demos
 
 ```
+python demo.py showcase     # six working programs with correct results, one per feature
 python demo.py review2      # version 1: a valid run, a unit error, the generated Python, several errors at once
 python demo.py review3      # extensions: conversions, angles, kinds, temperatures, empirical functions
 ```

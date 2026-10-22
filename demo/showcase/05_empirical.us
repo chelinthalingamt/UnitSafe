@@ -1,0 +1,24 @@
+# Showcase 5: empirical formulas, checked at their edges
+unit m
+unit s
+unit K
+unit kg
+unit g = 0.001 kg
+unit W
+unit degC = 1 K offset 273.15
+
+empirical fn sound_speed(t: degC) -> m / s
+    return 331.3 + 0.606 * t
+end
+
+empirical fn metabolic(mass: kg) -> W
+    return 3.4 * mass ^ 0.75
+end
+
+print("sound at 20 degC:", sound_speed(20 degC))
+let room: degC = 25 degC
+print("sound at 25 degC:", sound_speed(room))
+let distance = 1000 m
+print("thunder delay:", distance / sound_speed(room))
+print("cat:", metabolic(4000 g))
+print("elephant:", metabolic(5000 kg))

@@ -1,0 +1,8 @@
+# Showcase 6: money in two currencies
+unit INR
+unit USD
+let rate = 83.2 INR / USD
+let laptop = 950 USD
+let shipping = 1200 INR
+print("laptop in rupees:", laptop * rate)
+print("total cost:", laptop * rate + shipping)

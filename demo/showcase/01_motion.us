@@ -1,0 +1,34 @@
+# Showcase 1: a car trip (version 1: units, functions, if / else if, pi)
+unit m
+unit s
+unit kg
+
+fn speed(d: m, t: s) -> m / s
+    return d / t
+end
+
+fn stopping_distance(v: m / s, a: m / s^2) -> m
+    return v ^ 2 / (2 * a)
+end
+
+let d = 150 m
+let t = 12 s
+let v = speed(d, t)
+print("speed:", v)
+
+let brake = 6 m / s^2
+let stop = stopping_distance(v, brake)
+print("stopping distance:", stop)
+if stop < 10 m
+    print("verdict: safe")
+else if stop < 20 m
+    print("verdict: careful")
+else
+    print("verdict: too fast")
+end
+
+let mass = 1200 kg
+print("kinetic energy:", mass * v ^ 2 / 2)
+
+let r = 50 m
+print("track length:", 2 * pi * r)

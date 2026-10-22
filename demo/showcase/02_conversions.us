@@ -1,0 +1,23 @@
+# Showcase 2: conversions and nicknames
+unit m
+unit s
+unit kg
+unit km = 1000 m
+unit h = 3600 s
+unit min = 60 s
+unit N = kg * m / s^2
+unit J = N * m
+unit W = J / s
+unit kW = 1000 W
+
+let trip = 240 km
+let time = 3 h + 30 min
+print("trip time:", time in h)
+print("average speed:", trip / time in km / h)
+
+let F: N = 1500 kg * 2 m / s^2
+print("force:", F)
+let work: J = F * 100 m
+print("work:", work)
+let power: W = work / 20 s
+print("power:", power, "=", power in kW)

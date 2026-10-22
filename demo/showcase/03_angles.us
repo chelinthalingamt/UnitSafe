@@ -1,0 +1,18 @@
+# Showcase 3: angles
+unit m
+unit s
+
+let angle = 30 deg
+let ramp = 10 m
+print("ramp height:", ramp * sin(angle))
+print("ramp base:", ramp * cos(angle))
+
+let slope = atan2(5 m, 12 m)
+print("roof slope:", slope in deg)
+
+let wheel = 0.3 m
+let turn = 90 deg
+let arc: m = wheel * turn
+print("distance rolled:", arc)
+let spin: rad / s = turn / 2 s
+print("spin rate:", spin)
