@@ -184,5 +184,39 @@ class ParserEdgeCases(unittest.TestCase):
         self.assertEqual(e, mk(A.BinOp, op='+', left=num(1), right=num(2)))
 
 
+
+def perrs(src):
+    try:
+        parse(tokenize(src))
+    except ParseError as e:
+        return [err.line for err in e.errors]
+    return []
+
+
+class SeveralSyntaxErrorsD26(unittest.TestCase):
+    def test_independent_errors(self):
+        self.assertEqual(perrs('let = 1\nprint(1)\nlet y =\nprint(2)'), [1, 3])
+        self.assertEqual(perrs('end\nend\nprint(1)'), [1, 2])
+
+    def test_error_inside_a_block_keeps_the_block(self):
+        self.assertEqual(perrs('if x > 1\n  let = 5\n  print(x)\nend\nlet y =\n'), [2, 5])
+        self.assertEqual(perrs('while x < 3\n  x = \n  print(x)\nend'), [2])
+
+    def test_error_in_a_block_header_reads_the_block(self):
+        self.assertEqual(perrs('if x >\n  print(1)\nend\nlet a = 2 2'), [1, 4])
+        self.assertEqual(perrs('if a\n  print(1)\nelse if b >\n  print(2)\nend\nlet = 1'), [3, 6])
+        self.assertEqual(perrs('fn f(a,)\n  return a\nend\nprint(1)'), [1])
+        self.assertEqual(perrs('if a\n  if b >\n    print(1)\n  end\nend\nprint(2)'), [2])
+
+    def test_missing_end_is_one_error(self):
+        self.assertEqual(perrs('if a\n  print(1)\n'), [3])
+        self.assertEqual(len(perrs('if a\n  while b\n    print(1)\n  end\n')), 1)
+
+    def test_stops_after_20(self):
+        self.assertEqual(perrs('\n'.join(['let = 1'] * 25)), list(range(1, 21)))
+
+    def test_valid_program_has_no_errors(self):
+        self.assertEqual(perrs('if a\n  print(1)\nelse if b\n  print(2)\nelse\n  print(3)\nend'), [])
+
 if __name__ == '__main__':
     unittest.main()

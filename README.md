@@ -11,6 +11,17 @@ print(v)              # 12 m / s
 print(v + 3 m)        # error [U6]: cannot add m / s and m
 ```
 
+## New since version 1
+
+```
+use si: m, s, kg, N, km, h, degC      # ready-made SI units, only the names you list (D28)
+let impulse = read("impulse: ", N * s) # typed input must carry its unit: '1100 lbf * s' is converted,
+                                       # '1100 kg' is refused while running (D27)
+```
+
+The compiler also reports up to 20 syntax errors in one run (D26). UnitSafe checks units at
+compile time and validates units at run time only where data comes in (`read`).
+
 ## Run it
 
 Needs Python 3.10 or newer. Nothing to install.
@@ -40,7 +51,7 @@ The tests use only the standard library (`unittest`).
 ## Demos
 
 ```
-python demo.py showcase     # six working programs with correct results, one per feature
+python demo.py showcase     # eight working programs with correct results, one per feature
 python demo.py review2      # version 1: a valid run, a unit error, the generated Python, several errors at once
 python demo.py review3      # extensions: conversions, angles, kinds, temperatures, empirical functions
 ```

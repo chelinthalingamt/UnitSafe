@@ -138,6 +138,17 @@ class Power(Node):
 
 
 @dataclass(kw_only=True)
+class Read(Node):             # D27: read("prompt", unit)
+    prompt: str | None
+    ann: UnitAnn
+    qtype: object = _cf()
+    want: dict | None = _cf()          # the declared table, checked when the program runs
+    label: str = _cf('')
+    reading: bool = _cf(False)
+    delta: bool = _cf(False)
+
+
+@dataclass(kw_only=True)
 class Call(Node):
     name: str
     args: list
@@ -155,6 +166,12 @@ class UnitDecl(Node):
     expr: Node | None = None
     offset: float | None = None
     kind: str | None = None
+
+
+@dataclass(kw_only=True)
+class UseDecl(Node):          # D28: use si: m, s, kg
+    lib: str
+    names: list               # UnitName nodes, for positions in errors
 
 
 @dataclass(kw_only=True)
@@ -231,6 +248,8 @@ class CallStmt(Node):         # D6
 @dataclass(kw_only=True)
 class Program(Node):
     body: list
+    uses_read: bool = _cf(False)       # D27: the generator adds the input helper
+    unit_table: dict | None = _cf()    # D27: name -> (table, factor, offset)
 
 
 def dump(node, indent=0) -> str:

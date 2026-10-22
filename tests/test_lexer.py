@@ -79,6 +79,15 @@ class LexerEdgeCases(unittest.TestCase):
     def test_newlines_inside_brackets_D4(self):
         self.assertNotIn(T.NEWLINE, types('f(a,\n b)')[:-2])
 
+    def test_unclosed_bracket_before_a_statement_D4b(self):
+        # a line starting with a statement word cannot continue an expression
+        self.assertEqual(types('print("a"\nend'), [T.PRINT, T.LPAREN, T.STRING, T.NEWLINE, T.END, T.NEWLINE, T.EOF])
+        self.assertEqual(types('f(1,\n  let')[:5], [T.NAME, T.LPAREN, T.NUMBER, T.COMMA, T.NEWLINE])
+        # real continuations still join: the next line starts with a value or an operator word
+        self.assertNotIn(T.NEWLINE, types('f(1,\n  2)')[:-2])
+        self.assertNotIn(T.NEWLINE, types('f(a and\n  not b)')[:-2])
+        self.assertNotIn(T.NEWLINE, types('f(a,\n  letter)')[:-2])      # 'letter' is a name, not 'let'
+
     def test_blank_and_comment_lines_collapse(self):
         self.assertEqual(types('x\n\n\n# c\n\ny'), [T.NAME, T.NEWLINE, T.NAME, T.NEWLINE, T.EOF])
 

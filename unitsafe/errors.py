@@ -18,10 +18,11 @@ class LexError(Exception):
 
 
 class ParseError(Exception):
-    """Carries one CompileError; stops the pipeline."""
-    def __init__(self, error: CompileError):
+    """Carries the first CompileError, and all of them in .errors (D26: up to 20)."""
+    def __init__(self, error: CompileError, errors=None):
         super().__init__(error.message)
         self.error = error
+        self.errors = errors or [error]
 
 
 # One place for every checker message (error catalogue). Keys are rule IDs,
@@ -97,6 +98,8 @@ MESSAGES = {
     'T8.change': "{what} holds a change, cannot store a reading; use kelvin(...) or declare it with a reading unit such as degC",
     'E1.param': "parameter '{p}' needs a unit",
     'E1.ret': "the result of '{f}' needs a unit",
+    'SI1.lib': "only 'si' can be used, not '{lib}'",
+    'SI1.name': "si has no unit '{u}'",
     'E4': "units cannot be used inside an empirical function",
     'E5': "only built-in maths can be called inside an empirical function",
 }
@@ -115,5 +118,5 @@ def format_errors(errors: list, filename: str, source: str) -> str:
     lines = source.replace('\r\n', '\n').replace('\r', '\n').split('\n')
     parts = [format_error(e, filename, lines) for e in errors]
     n = len(errors)
-    parts.append(f"{n} error" + ("" if n == 1 else "s"))
+    parts.append(f"{n} error" + ("" if n == 1 else "s") + (" (stopped after 20)" if n >= 20 else ""))
     return "\n".join(parts)

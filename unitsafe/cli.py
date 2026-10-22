@@ -33,8 +33,10 @@ def compile_full(text: str, filename: str = 'program.us'):
         try:
             tokens = Lexer(text).run()
             tree = Parser(tokens).parse()
-        except (LexError, ParseError) as e:
+        except LexError as e:
             return None, [e.error], {}                 # one error, stop
+        except ParseError as e:
+            return None, e.errors, {}                  # up to 20 syntax errors (D26); no checker
         errors = Checker().run(tree)
         if errors:
             return None, errors, {}                    # all checker errors, no code (G6)
@@ -72,6 +74,13 @@ def run_code(code: str, line_map: dict) -> int:
         return 2
     except KeyboardInterrupt:
         return 130
+    except Exception as e:                             # D27: bad input, refused with its line
+        if type(e).__name__ != 'UnitInputError':
+            raise
+        line = runtime_line(e, line_map)
+        where = f' at line {line}' if line else ''
+        print(f'input error{where}: {e}', file=sys.stderr)
+        return 2
     return 0
 
 
@@ -99,7 +108,7 @@ def main(argv) -> int:
             else:
                 print(dump(Parser(tokens).parse()))
         except (LexError, ParseError) as e:
-            print(format_errors([e.error], filename, text), file=sys.stderr)
+            print(format_errors(getattr(e, 'errors', [e.error]), filename, text), file=sys.stderr)
             return 1
         return 0
 

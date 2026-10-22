@@ -45,5 +45,19 @@ class Demos(unittest.TestCase):
         self.assertEqual(run('demo/showcase/06_money.us').splitlines(), [
             'laptop in rupees: 79040 INR', 'total cost: 80240 INR'])
 
+    def test_input_check_D27(self):
+        src = (ROOT / 'demo/showcase/07_input_check.us').read_text(encoding='utf-8')
+        self.assertEqual(outcome(src, '1100 lbf * s\n'),
+                         'thruster impulse (with its unit): received 4892.8 N * s\nenough to reach orbit')
+        self.assertEqual(outcome(src, '1100 N * s\n'),
+                         'thruster impulse (with its unit): received 1100 N * s\nnot enough')
+        self.assertEqual(outcome(src, '1100 kg\n'), '!input')
+
+    def test_use_si_and_syntax_errors(self):
+        self.assertEqual(run('demo/showcase/08_use_si.us').splitlines(), [
+            'energy to climb the hill: 205800 J', 'average power: 137.2 W',
+            'walking pace: 10.8 km / h', 'lake water: 18 degC = 64.4 degF'])
+        self.assertEqual(run('demo/review3/07_syntax_errors.us'), '!P6@4 P6@7 P6@9')
+
 if __name__ == '__main__':
     unittest.main()

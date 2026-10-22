@@ -152,7 +152,7 @@ class GeneratorOutput(unittest.TestCase):                           # Part 9
 
 def cli(*args, stdin_text=None):
     p = subprocess.run([sys.executable, '-m', 'unitsafe', *args], cwd=ROOT,
-                       capture_output=True, text=True, timeout=30)
+                       capture_output=True, text=True, timeout=30, input=stdin_text)
     return p.returncode, p.stdout, p.stderr
 
 
@@ -191,6 +191,15 @@ class CommandLine(unittest.TestCase):                                # Part 10
         self.assertEqual(code, 1)
         self.assertTrue(err.strip().endswith('3 errors'))
         self.assertLess(err.index(':4:'), err.index(':5:'))
+
+    def test_several_syntax_errors_D26(self):
+        src = UNITS + 'print(1 m + 1 s)\nlet = 2\nprint((1)\nlet z = 3'
+        code, out, err = cli('check', self.write('p.us', src))
+        self.assertEqual(code, 1)
+        self.assertTrue(err.strip().endswith('2 errors'))
+        self.assertNotIn('[U6]', err)                     # no checker after syntax errors
+        code, out, err = cli('check', self.write('p2.us', '\n'.join(['let = 1'] * 25)))
+        self.assertTrue(err.strip().endswith('20 errors (stopped after 20)'))
 
     def test_lexer_error_stops_pipeline(self):
         code, out, err = cli('check', self.write('l.us', UNITS + 'print(1 m + 1 s)\nlet a = @'))
@@ -232,6 +241,14 @@ class CommandLine(unittest.TestCase):                                # Part 10
                          ('print(1e300 * 1e10)', 'math range error')):        # inf caught at print
             code, out, err = cli('run', self.write('m.us', src))
             self.assertEqual((code, err.strip()), (2, 'runtime error at line 1: ' + msg))
+
+    def test_input_error_D27(self):
+        src = 'unit kg\nunit m\nunit s\nunit N = kg * m / s^2\nlet i = read("impulse: ", N * s)\nprint(i)'
+        path = self.write('in.us', src)
+        code, out, err = cli('run', path, stdin_text='5 kg\n')
+        self.assertEqual((code, err.strip()), (2, 'input error at line 5: expected N * s, got kg'))
+        code, out, err = cli('run', path, stdin_text='5 N * s\n')
+        self.assertEqual((code, out.strip()), (0, 'impulse: 5 kg * m / s'))
 
     def test_infinite_recursion(self):
         code, out, err = cli('run', self.write('r.us', 'fn f(n)\n  return f(n + 1)\nend\nprint(f(1))'))

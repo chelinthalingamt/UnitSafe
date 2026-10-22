@@ -1,0 +1,15 @@
+# Showcase 7: units checked at the input (the Mars Climate Orbiter check)
+unit kg
+unit m
+unit s
+unit N = kg * m / s^2
+unit lbf = 4.448 N
+
+let needed: N * s = 4000 N * s
+let impulse: N * s = read("thruster impulse (with its unit): ", N * s)
+print("received", impulse)
+if impulse >= needed
+    print("enough to reach orbit")
+else
+    print("not enough")
+end

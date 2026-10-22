@@ -13,6 +13,8 @@ class TokenType(Enum):
     IF = auto(); ELSE = auto(); WHILE = auto(); END = auto()
     IN = auto(); KIND = auto(); OF = auto(); OFFSET = auto(); DELTA = auto(); EMPIRICAL = auto()
     TRUE = auto(); FALSE = auto(); AND = auto(); OR = auto(); NOT = auto()
+    READ = auto()                                            # D27
+    USE = auto()                                             # D28
     # two-character symbols
     ARROW = auto(); EQEQ = auto(); NOTEQ = auto(); LE = auto(); GE = auto()
     # one-character symbols
@@ -32,6 +34,7 @@ KEYWORDS = {
     'in': T.IN, 'kind': T.KIND, 'of': T.OF, 'offset': T.OFFSET, 'delta': T.DELTA,
     'empirical': T.EMPIRICAL,
     'true': T.TRUE, 'false': T.FALSE, 'and': T.AND, 'or': T.OR, 'not': T.NOT,
+    'read': T.READ, 'use': T.USE,
 }
 
 TWO_CHAR = {'->': T.ARROW, '==': T.EQEQ, '!=': T.NOTEQ, '<=': T.LE, '>=': T.GE}

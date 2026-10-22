@@ -1,0 +1,9 @@
+# Review 3, demo 7: several syntax mistakes, all reported in one run
+use si: m, s
+let speed = 12 m / s
+let distance = speed *
+print("distance", distance)
+if speed > 10 m / s
+    print("fast"
+end
+let time = 5 s s

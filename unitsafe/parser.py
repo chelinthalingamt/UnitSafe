@@ -2,12 +2,18 @@
 (build guide Part 3, P1-P6, D1-D3, D6, D10, D17, D19-D23)."""
 from .ast_nodes import (Assign, Bool, BinOp, Call, CallStmt, Compare, FnDecl, If, KindDecl, Let,
                         Logic, Name, Neg, Not, Number, Param, Power, Print, PrintArg, Program,
-                        Return, String, UnitAnn, UnitDecl, UnitDiv, UnitLiteral, UnitMul,
+                        Read, Return, String, UseDecl, UnitAnn, UnitDecl, UnitDiv, UnitLiteral, UnitMul,
                         UnitName, UnitOne, UnitPow, While)
 from .errors import CompileError, ParseError
 from .tokens import TokenType as T
 
 COMPARE_OPS = (T.LT, T.GT, T.LE, T.GE, T.EQEQ, T.NOTEQ)
+BLOCK_STARTS = (T.IF, T.WHILE, T.FN, T.EMPIRICAL, T.ELSE)
+MAX_ERRORS = 20                                                   # D26
+
+
+class _TooManyErrors(Exception):
+    pass
 IN_MESSAGE = "'in' is only allowed at the end of a value in print(...)"
 
 
@@ -27,6 +33,7 @@ class Parser:
     def __init__(self, tokens: list):
         self.toks = tokens
         self.i = 0
+        self.errors = []                                          # D26
 
     # ---------- helpers ----------
     def peek(self, k: int = 0):
@@ -71,10 +78,16 @@ class Parser:
     def parse(self) -> Program:
         body = []
         self.skip_newlines()
-        while not self.check(T.EOF):
-            body.append(self.statement())
-            self.end_statement()
-            self.skip_newlines()
+        try:
+            while not self.check(T.EOF):
+                st = self.statement_or_recover()
+                if st is not None:
+                    body.append(st)
+                self.skip_newlines()
+        except _TooManyErrors:
+            pass
+        if self.errors:
+            raise ParseError(self.errors[0], self.errors)
         return Program(body=body, line=1, col=1)
 
     def block(self, opener):
@@ -83,10 +96,57 @@ class Parser:
         while not self.check(T.END, T.ELSE):
             if self.check(T.EOF):
                 raise self.error(f"expected 'end' to close the '{opener.text}' on line {opener.line}")
-            stmts.append(self.statement())
-            self.end_statement()
+            st = self.statement_or_recover()
+            if st is not None:
+                stmts.append(st)
             self.skip_newlines()
         return stmts
+
+    # ---------- D26: recovering from a syntax error ----------
+    def statement_or_recover(self):
+        """Parse one statement; on a syntax error record it, skip the rest of the line and
+        carry on. If the error was on a line that opens a block, read that block too, so
+        its 'end' is not reported as a second error."""
+        try:
+            st = self.statement()
+            self.end_statement()
+            return st
+        except ParseError as e:
+            self.record(e)
+            first = self.first_token_on_line(e.error.line)
+            self.skip_line()
+            if first is not None and first.type in BLOCK_STARTS:
+                self.recover_block(first)
+            return None
+
+    def record(self, e):
+        self.errors.extend(e.errors)
+        if len(self.errors) >= MAX_ERRORS:
+            del self.errors[MAX_ERRORS:]
+            raise _TooManyErrors()
+
+    def first_token_on_line(self, line):
+        for tok in self.toks:
+            if tok.line == line and tok.type != T.NEWLINE:
+                return tok
+        return None
+
+    def skip_line(self):
+        while not self.check(T.NEWLINE, T.EOF):
+            self.advance()
+        self.match(T.NEWLINE)
+
+    def recover_block(self, opener):
+        try:
+            self.block(opener)
+            while self.match(T.ELSE):
+                self.skip_line()
+                self.block(opener)
+            self.expect(T.END, "'end'")
+            self.end_statement()
+        except ParseError as e:
+            self.record(e)
+            self.skip_line()
 
     # ---------- statements ----------
     def statement(self):
@@ -96,6 +156,8 @@ class Parser:
             return self.unit_decl()
         if t == T.KIND:
             return self.kind_decl()
+        if t == T.USE:
+            return self.use_decl()
         if t == T.LET:
             return self.let()
         if t == T.PRINT:
@@ -147,6 +209,18 @@ class Parser:
         neg = self.match(T.MINUS)
         tok = self.expect(T.NUMBER, 'a number')
         return -tok.value if neg else tok.value
+
+    def use_decl(self):                                              # D28
+        kw = self.advance()
+        lib = self.expect(T.NAME, "a library name after 'use'")
+        self.expect(T.COLON, f"':' after use {lib.text}")
+        names = []
+        while True:
+            tok = self.expect(T.NAME, 'a unit name')
+            names.append(UnitName(name=tok.text, **self.pos(tok)))
+            if not self.match(T.COMMA):
+                break
+        return UseDecl(lib=lib.text, names=names, **self.pos(kw))
 
     def kind_decl(self):
         kw = self.advance()
@@ -360,6 +434,16 @@ class Parser:
         if t == T.STRING:
             self.advance()
             return String(value=tok.value, **self.pos(tok))
+        if t == T.READ:                                              # D27
+            self.advance()
+            self.expect(T.LPAREN, "'(' after read")
+            prompt = None
+            if self.check(T.STRING):
+                prompt = self.advance().value
+                self.expect(T.COMMA, "',' after the prompt")
+            ann = self.unit_ann()
+            self.expect(T.RPAREN, "')'")
+            return Read(prompt=prompt, ann=ann, **self.pos(tok))
         if t in (T.TRUE, T.FALSE):                                   # D19
             self.advance()
             return Bool(value=(t == T.TRUE), **self.pos(tok))

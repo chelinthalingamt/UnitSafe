@@ -8,6 +8,9 @@ from .tokens import KEYWORDS, ONE_CHAR, TWO_CHAR, Token, TokenType as T
 ASCII_LETTERS = set(string.ascii_letters)
 DIGITS = set('0123456789')
 NAME_CHARS = ASCII_LETTERS | DIGITS | {'_'}
+# D4b: words that can only start a statement, never continue an expression
+STATEMENT_WORDS = {'let', 'print', 'if', 'else', 'while', 'end', 'fn', 'empirical',
+                   'return', 'unit', 'kind', 'use'}
 
 
 class Lexer:
@@ -55,6 +58,8 @@ class Lexer:
             elif c == '\n':
                 line, col = self.line, self.col
                 self.advance()
+                if self.depth > 0 and self.next_line_starts_statement():
+                    self.depth = 0                           # D4b: the bracket was never closed
                 self.newline(line, col)
             elif c in DIGITS:
                 self.number()                                # L5, D5
@@ -67,6 +72,15 @@ class Lexer:
         self.newline(self.line, self.col)                    # L8
         self.add(T.EOF, '', None, self.line, self.col)
         return self.tokens
+
+    def next_line_starts_statement(self) -> bool:
+        j = self.i
+        while j < len(self.text) and self.text[j] in ' \t':
+            j += 1
+        k = j
+        while k < len(self.text) and self.text[k] in NAME_CHARS:
+            k += 1
+        return self.text[j:k] in STATEMENT_WORDS
 
     def newline(self, line, col):
         """Only at bracket depth 0, never twice in a row, never first (NEWLINE rules)."""

@@ -8,9 +8,10 @@ import keyword
 import math
 
 from . import ast_nodes as A
-from .runtime import US_PRINT_SOURCE
+from .runtime import US_PRINT_SOURCE, US_READ_SOURCE
 
-RESERVED = set(keyword.kwlist) | set(dir(builtins)) | {'math', 'us_print', 'us_fmt'}
+RESERVED = set(keyword.kwlist) | set(dir(builtins)) | {'math', 'us_print', 'us_fmt', 'us_read', 'us_unit',
+                                                      'US_UNITS', 'UnitInputError'}
 
 
 def py_name(name: str) -> str:                                        # G5, D15
@@ -30,12 +31,17 @@ class Generator:
         self.raw('import math')
         for line in US_PRINT_SOURCE.split('\n'):
             self.raw(line)
+        if program.uses_read:                                          # D27
+            for line in US_READ_SOURCE.split('\n'):
+                self.raw(line)
+            self.raw(f'US_UNITS = {program.unit_table!r}')
+            self.raw('')
         for st in program.body:                                        # hoisted defs (D8)
             if isinstance(st, A.FnDecl):
                 self.stmt(st)
                 self.raw('')
         for st in program.body:
-            if not isinstance(st, (A.FnDecl, A.UnitDecl, A.KindDecl)):
+            if not isinstance(st, (A.FnDecl, A.UnitDecl, A.KindDecl, A.UseDecl)):
                 self.stmt(st)
         return '\n'.join(self.lines).rstrip('\n') + '\n'
 
@@ -58,7 +64,7 @@ class Generator:
 
     # ---------- statements (G1) ----------
     def stmt(self, s):
-        if isinstance(s, (A.UnitDecl, A.KindDecl)):
+        if isinstance(s, (A.UnitDecl, A.KindDecl, A.UseDecl)):
             return
         getattr(self, 'st_' + type(s).__name__)(s)
 
@@ -205,6 +211,9 @@ class Generator:
 
     def ex_Power(self, e):                                             # G8
         return f'math.pow({self.expr(e.base)}, {self.expr(e.exp)})'
+
+    def ex_Read(self, e):                                              # D27
+        return f'us_read({e.prompt or ""!r}, {e.want!r}, {e.label!r}, {e.reading}, {e.delta})'
 
     def ex_Call(self, e):
         args = [self.expr(a) for a in e.args]

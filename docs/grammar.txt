@@ -3,8 +3,9 @@ UnitSafe grammar (build guide "Language reference", including D19-D23)
 program      -> NEWLINE* ( statement NEWLINE+ )* EOF
 block        -> NEWLINE* ( statement NEWLINE+ )*
 
-statement    -> unitDecl | kindDecl | letStmt | assignStmt | printStmt
+statement    -> unitDecl | kindDecl | useDecl | letStmt | assignStmt | printStmt
               | ifStmt | whileStmt | fnDecl | returnStmt | callStmt
+useDecl      -> "use" NAME ":" NAME ( "," NAME )*                    # D28
 
 unitDecl     -> "unit" NAME ( "=" unitDef )? ( "of" NAME )?        # "=" part: phase 6, "of": phase 8
 unitDef      -> NUMBER? unitExpr ( "offset" signedNumber )?           # offset: phase 9
@@ -40,6 +41,7 @@ power        -> factor ( "^" exponent )?                               # one ^ o
 exponent     -> "-"? factor
 factor       -> NUMBER unitAtom?                                       # unit literal (U3, D1, D17)
               | STRING | "true" | "false"                              # D19
+              | "read" "(" ( STRING "," )? unitAnn ")"                 # D27
               | call | NAME | "(" expression ")"                       # pi is a NAME (D22)
 unitAtom     -> "delta"? NAME ( "^" "-"? INTEGER )?                    # ^ taken only if an integer follows
 call         -> NAME "(" args? ")"

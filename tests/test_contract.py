@@ -12,7 +12,7 @@ class ContractTests(unittest.TestCase):
     def test_all_keywords_reserved(self):           # D18 + D19/D20
         expected = {'unit', 'let', 'fn', 'return', 'print', 'if', 'else', 'while', 'end',
                     'in', 'kind', 'of', 'offset', 'delta', 'empirical',
-                    'true', 'false', 'and', 'or', 'not'}
+                    'true', 'false', 'and', 'or', 'not', 'read', 'use'}
         self.assertEqual(set(KEYWORDS), expected)
         for word, tt in KEYWORDS.items():
             self.assertIsInstance(tt, TokenType)

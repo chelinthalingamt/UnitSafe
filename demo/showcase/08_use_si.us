@@ -1,0 +1,16 @@
+# Showcase 8: ready-made SI units (use si) and readable results
+use si: m, s, kg, J, W, km, min, h, degC, degF
+
+let mass = 70 kg
+let climb = 300 m
+let work = mass * 9.8 m / s^2 * climb
+print("energy to climb the hill:", work)
+
+let time = 25 min
+print("average power:", work / time)
+
+let route = 4.5 km
+print("walking pace:", route / time in km / h)
+
+let water: degC = 18 degC
+print("lake water:", water, "=", water in degF)

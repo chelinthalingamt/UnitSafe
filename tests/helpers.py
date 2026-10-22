@@ -2,6 +2,7 @@
 import contextlib
 import io
 import re
+import sys
 
 PROGRAM_EXCEPTIONS = (ZeroDivisionError, ValueError, OverflowError, RecursionError)
 
@@ -19,21 +20,28 @@ def compile_full(src: str):
     return cf(src, 'test.us')
 
 
-def outcome(src: str) -> str:
+def outcome(src: str, stdin: str = '') -> str:
     """Run a UnitSafe program and describe what happened.
 
     Output lines joined by newlines, or '!RULE RULE ...' for compile errors
-    (each with '@line'), or '!runtime' for a run-time error.
+    (each with '@line'), '!runtime' for a run-time error, '!input' for refused input (D27).
     """
     code, errors, _ = compile_full(src)
     if errors:
         return '!' + ' '.join(f'{e.rule}@{e.line}' for e in errors)
     buf = io.StringIO()
+    old_stdin, sys.stdin = sys.stdin, io.StringIO(stdin)
     try:
         with contextlib.redirect_stdout(buf):
             exec(compile(code, '<unitsafe>', 'exec'), {'__name__': '__main__'})
     except PROGRAM_EXCEPTIONS:
         return '!runtime'
+    except Exception as e:
+        if type(e).__name__ == 'UnitInputError':
+            return '!input'
+        raise
+    finally:
+        sys.stdin = old_stdin
     return buf.getvalue().rstrip('\n')
 
 

@@ -3,7 +3,7 @@ without stopping (build guide Parts 5-8; rules S1-S12, U1-U12, D7, D8 ...)."""
 import dataclasses
 
 from . import ast_nodes as A
-from .builtins import CONSTANTS, DEG_FACTOR, FUNCTIONS, INVERSE_TRIG, TRIG
+from .builtins import CONSTANTS, DEG_FACTOR, FUNCTIONS, INVERSE_TRIG, SI, TRIG
 from .errors import MESSAGES, CompileError
 from .symbols import Entry, FnSig, SymbolTable
 from .units import (BOOL, ERROR, STRING, VOID, UnitSpec, ann_text, describe, div, half, label,
@@ -55,6 +55,7 @@ class Checker:
         self.syms = SymbolTable()
         self.fn = None            # (FnDecl, FnSig | None) while checking a body
         self.plain = False        # inside an empirical body (phase 10)
+        self.uses_read = False    # D27
         g = self.syms.globals.names
         for name in FUNCTIONS:
             g[name] = Entry('builtin', 0)
@@ -82,6 +83,9 @@ class Checker:
         self.pass1(program.body)
         for st in program.body:
             self.stmt(st, top=True)
+        program.uses_read = self.uses_read                               # D27
+        program.unit_table = {name: (dict(e.spec.table), e.spec.factor, e.spec.offset)
+                              for name, e in self.syms.globals.names.items() if e.category == 'unit'}
         return sorted(self.errors, key=lambda e: (e.line, e.col))
 
     def pass1(self, body):
@@ -91,6 +95,8 @@ class Checker:
                 self.declare_unit(st)
             elif isinstance(st, A.KindDecl):
                 self.declare_kind(st)
+            elif isinstance(st, A.UseDecl):
+                self.declare_si(st)
             elif isinstance(st, A.FnDecl):
                 self.register_fn(st)
 
@@ -143,6 +149,17 @@ class Checker:
             self.report('K1', node, k=name)
             return None
         return name
+
+    def declare_si(self, d):                                              # D28, SI1-SI3
+        if d.lib != 'si':
+            self.report('SI1', d, 'SI1.lib', lib=d.lib)
+            return
+        for n in d.names:
+            spec = SI.get(n.name)
+            if spec is None:
+                self.report('SI1', n, 'SI1.name', u=n.name)
+                continue
+            self.declare_name(n.name, Entry('unit', n.line, spec=spec, delta_ok=spec.offset != 0), n, 'unit')
 
     def declare_kind(self, d):
         self.declare_name(d.name, Entry('kind', d.line), d, 'kind')
@@ -251,6 +268,10 @@ class Checker:
         if isinstance(s, A.KindDecl):
             if not top:
                 self.report('S11', s, what='kind')
+            return
+        if isinstance(s, A.UseDecl):
+            if not top:
+                self.report('S11', s, what='use')
             return
         if isinstance(s, A.FnDecl):
             if not top:
@@ -652,6 +673,21 @@ class Checker:
             self.report('T3', node, 'T3.cmp')
             return False
         return True
+
+    def ex_Read(self, node):                                               # D27, R4, R6
+        if self.plain:
+            self.report('E4', node)
+            return ERROR
+        spec = self.ann_spec(node.ann)
+        if spec is None:
+            return ERROR
+        reading = spec.offset != 0
+        node.want = dict(spec.table)
+        node.label = ann_text(node.ann)
+        node.reading = reading
+        node.delta = node.ann.delta
+        self.uses_read = True
+        return num(spec.table, spec.kind, reading)
 
     def ex_Logic(self, node):                                              # D20
         ok = True
