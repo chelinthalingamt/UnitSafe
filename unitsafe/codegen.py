@@ -5,6 +5,7 @@ was worked out by the checker.
 """
 import builtins
 import keyword
+import math
 
 from . import ast_nodes as A
 from .runtime import US_PRINT_SOURCE
@@ -116,7 +117,46 @@ class Generator:
 
     # ---------- expressions (G2, G3) ----------
     def expr(self, e) -> str:
+        if isinstance(e, (A.BinOp, A.Neg, A.Power)):                   # G9: fold constants
+            v = self.const_value(e)
+            if v is not None:
+                return num_text(v)
         return getattr(self, 'ex_' + type(e).__name__)(e)
+
+    def const_value(self, e):
+        """The value of an expression made only of numbers, or None.
+        Anything that would fail or overflow is left for run time, so errors keep their line."""
+        if isinstance(e, A.Number):
+            return float(e.value)
+        if isinstance(e, A.UnitLiteral):
+            return float(e.base_value)
+        if isinstance(e, A.Name):
+            return float(e.unit_value) if e.unit_value is not None else None
+        if isinstance(e, A.Neg):
+            v = self.const_value(e.operand)
+            return None if v is None else -v
+        if isinstance(e, (A.BinOp, A.Power)):
+            left = self.const_value(e.left if isinstance(e, A.BinOp) else e.base)
+            if left is None:
+                return None
+            right = self.const_value(e.right if isinstance(e, A.BinOp) else e.exp)
+            if right is None:
+                return None
+            try:
+                if isinstance(e, A.Power):
+                    v = math.pow(left, right)
+                elif e.op == '+':
+                    v = left + right
+                elif e.op == '-':
+                    v = left - right
+                elif e.op == '*':
+                    v = left * right
+                else:
+                    v = left / right
+            except (ZeroDivisionError, ValueError, OverflowError):
+                return None
+            return v if math.isfinite(v) else None
+        return None
 
     def ex_Number(self, e):
         return num_text(e.value)
@@ -145,8 +185,10 @@ class Generator:
         exactly like UnitSafe (P3), so the left side of a chain needs no brackets of its own."""
         group = ('+', '-') if e.op in ('+', '-') else ('*', '/')
         left = e.left
-        left_text = (self.chain(left) if isinstance(left, A.BinOp) and left.op in group
-                     else self.expr(left))
+        if isinstance(left, A.BinOp) and left.op in group and self.const_value(left) is None:
+            left_text = self.chain(left)
+        else:
+            left_text = self.expr(left)
         return f'{left_text} {e.op} {self.expr(e.right)}'
 
     def ex_Compare(self, e):

@@ -6,6 +6,8 @@ def us_fmt(value, label):
         return 'True' if value else 'False'
     if isinstance(value, str):
         return value
+    if value != value or value in (float('inf'), float('-inf')):
+        raise OverflowError('math range error')   # a result too large for a float
     if value == 0:
         value = 0.0                      # turns -0.0 into 0.0 (D16)
     text = format(value, '.10g')         # at most 10 significant digits (D16)
@@ -17,9 +19,9 @@ def us_print(*args):                     # value, label, value, label, ... (D23)
     print(' '.join(us_fmt(v, l) for v, l in zip(args[0::2], args[1::2])))
 
 def fall_time(h, g):
-    return math.sqrt(((2.0 * h) / g))
+    return math.sqrt((2.0 * h / g))
 
-g = (9.8 / math.pow(1.0, 2.0))
+g = 9.8
 h = 1.0
 while (h < 1000.0):
     us_print('drop from', '', h, 'm', 'takes', '', fall_time(h, g), 's')

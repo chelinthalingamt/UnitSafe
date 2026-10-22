@@ -36,7 +36,11 @@ class Conversions(TableMixin, unittest.TestCase):
     def test_nicknames(self):
         N = 'unit kg\nunit m\nunit s\nunit N = kg * m / s^2\n'
         self.run_table([
-            (N + 'print(5 N + 2 kg * m / s^2)', '7 kg * m / s^2'),
+            (N + 'print(5 N + 2 kg * m / s^2)', '7 N'),                       # N3b: one match
+            (N + 'unit newton = kg * m / s^2\nprint(5 N + 2 N)', '7 kg * m / s^2'),   # N3b: two matches
+            ('unit s\nunit Hz = 1 / s\nprint(1 / 2 s)', '0.5 Hz'),
+            ('unit s\nunit Hz = 1 / s\nunit Bq = 1 / s\nprint(1 / 2 s)', '0.5 1 / s'),
+            ('unit m\nunit km = 1000 m\nprint(2 km + 1 m)', '2001 m'),         # factor 1000: never a nickname
             (N + 'let F: N = 2 kg * 3 m / s^2\nprint(F)', '6 N'),
             ('unit s\nunit Hz = 1 / s\nprint(50 Hz)', '50 Hz'),
             ('unit s\nunit Hz = 1 / s\nunit kHz = 1000 Hz\nprint(2 kHz in Hz)', '2000 Hz'),

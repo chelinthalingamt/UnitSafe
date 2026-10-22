@@ -6,6 +6,8 @@ def us_fmt(value, label):
         return 'True' if value else 'False'
     if isinstance(value, str):
         return value
+    if value != value or value in (float('inf'), float('-inf')):
+        raise OverflowError('math range error')   # a result too large for a float
     if value == 0:
         value = 0.0                      # turns -0.0 into 0.0 (D16)
     text = format(value, '.10g')         # at most 10 significant digits (D16)

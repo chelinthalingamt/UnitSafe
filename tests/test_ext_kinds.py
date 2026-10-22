@@ -36,7 +36,8 @@ class Kinds(TableMixin, unittest.TestCase):
             (H + 'let y = tau\ny = work', '!K5'),
             (H + 'print(torque)', '!S12'),
             (H + 'print(sqrt(tau * tau))', '40 kg * m^2 / s^2'),
-            (H + 'print(work * 2 + work)', '120 kg * m^2 / s^2'),
+            (H + 'print(work * 2 + work)', '120 J'),                           # N3b: energy matches J
+            (H + 'print(tau * 3)', '120 kg * m^2 / s^2'),                      # torque: no torque unit
             (H + 'print(-tau + tau)', '0 kg * m^2 / s^2'),
         ])
 

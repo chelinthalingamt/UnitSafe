@@ -54,11 +54,11 @@ def compile_source(text: str, filename: str = 'program.us'):
 def runtime_line(exc, line_map):
     """The UnitSafe line of the last generated-code frame in the traceback."""
     tb, line = exc.__traceback__, None
-    while tb is not None:
-        if tb.tb_frame.f_code.co_filename == '<unitsafe>':
-            line = tb.tb_lineno
+    while tb is not None:                      # skip frames inside the print helper
+        if tb.tb_frame.f_code.co_filename == '<unitsafe>' and tb.tb_lineno in line_map:
+            line = line_map[tb.tb_lineno]
         tb = tb.tb_next
-    return line_map.get(line) if line is not None else None
+    return line
 
 
 def run_code(code: str, line_map: dict) -> int:

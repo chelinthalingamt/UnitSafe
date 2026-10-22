@@ -313,7 +313,7 @@ class Checker:
             return
         ann = arg.target if explicit else self.declared_unit(arg.value)
         if ann is None:
-            arg.label = label(t.table)
+            arg.label = self.nickname(t) or label(t.table)               # N3b
             return
         spec = self.ann_spec(ann)
         if spec is None:
@@ -332,6 +332,16 @@ class Checker:
         arg.label = ann_text(ann) if spec.table else ''                   # '-> 1' has no label
         arg.divisor = spec.factor
         arg.offset = spec.offset if reading else 0.0
+
+    def nickname(self, t):
+        """N3b: the one declared unit with exactly this table and kind, factor 1 and no offset.
+        No match, or more than one (J and N * m both declared), means no nickname."""
+        if not t.table:
+            return None
+        names = [name for name, e in self.syms.globals.names.items()
+                 if e.category == 'unit' and e.spec.table == t.table and e.spec.kind == t.kind
+                 and e.spec.factor == 1.0 and e.spec.offset == 0]
+        return names[0] if len(names) == 1 else None
 
     def target_extra(self, arg, t, spec) -> bool:
         if spec.kind is not None and t.kind != spec.kind:                 # a kind cannot be converted away

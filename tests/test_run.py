@@ -87,6 +87,9 @@ class RunOutputs(TableMixin, unittest.TestCase):
             ('print(10 - (4 - 3))', '9'),
         ])
 
+    def test_overflow_at_print(self):
+        self.run_table([('print(1e300 * 1e10)', '!runtime'), ('print(-1e300 * 1e10)', '!runtime')])
+
     def test_empty_and_declaration_only(self):
         self.run_table([('', ''), ('unit m\nunit s', '')])
 
@@ -106,6 +109,14 @@ class GeneratorOutput(unittest.TestCase):                           # Part 9
         self.assertIn('(-math.pow(x, 2.0))', code_of('let x = 3\nlet y = -x ^ 2'))
         self.assertIn('y = (a - b - c)', code_of('let a = 1\nlet b = 2\nlet c = 3\nlet y = a - b - c'))
 
+    def test_constant_folding_G9(self):
+        self.assertIn('x = 7.0', code_of('let x = 1 + 2 * 3'))
+        self.assertIn('x = (3.0 + y)', code_of('let y = 1\nlet x = 1 + 2 + y'))
+        self.assertIn('g = 9.8', code_of(UNITS + 'let g = 9.8 m / s^2'))
+        self.assertIn('(5.0 / 0.0)', code_of(UNITS + 'print(5 m / 0 m)'))          # left for run time
+        self.assertIn('math.pow(-8.0, 0.3333333333333333)', code_of('print((-8) ^ (1 / 3))'))   # 1 / 3 folded, the failing power kept
+        self.assertIn('math.pow(10.0, 400.0)', code_of('print(10 ^ 400)'))
+
     def test_print_forms_D23(self):
         code = code_of(UNITS + 'let a = 1 m\nprint(a)\nprint("a")\nprint("a:", a, 2)')
         self.assertIn("us_print(a, 'm')", code)
@@ -123,7 +134,7 @@ class GeneratorOutput(unittest.TestCase):                           # Part 9
         src = (ROOT / 'tests/programs/sample01_tour.us').read_text()
         code = code_of(src)
         for text in ('def stop_distance(v, a):', '    return (math.pow(v, 2.0) / (2.0 * a))',
-                     'speed = (20.0 / 1.0)', 'decel = (5.0 / math.pow(1.0, 2.0))',
+                     'speed = 20.0', 'decel = 5.0',
                      "if (d > 30.0):\n    us_print('too far')\nelse:\n    us_print(d, 'm')"):
             self.assertIn(text, code)
 
@@ -217,7 +228,8 @@ class CommandLine(unittest.TestCase):                                # Part 10
         self.assertEqual((code, err.strip()), (2, 'runtime error at line 1: math domain error'))
         for src, msg in (('print(log(0))', 'math domain error'),
                          ('print((-8) ^ (1 / 3))', 'math domain error'),
-                         ('print(10 ^ 400)', 'math range error')):
+                         ('print(10 ^ 400)', 'math range error'),
+                         ('print(1e300 * 1e10)', 'math range error')):        # inf caught at print
             code, out, err = cli('run', self.write('m.us', src))
             self.assertEqual((code, err.strip()), (2, 'runtime error at line 1: ' + msg))
 
