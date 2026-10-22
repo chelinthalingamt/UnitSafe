@@ -138,9 +138,19 @@ class Generator:
         return py_name(e.name)
 
     def ex_BinOp(self, e):
-        return f'({self.expr(e.left)} {e.op} {self.expr(e.right)})'
+        return f'({self.chain(e)})'
 
-    ex_Compare = ex_BinOp
+    def chain(self, e):
+        """a + b + c without nesting: Python groups same-priority operators left to right,
+        exactly like UnitSafe (P3), so the left side of a chain needs no brackets of its own."""
+        group = ('+', '-') if e.op in ('+', '-') else ('*', '/')
+        left = e.left
+        left_text = (self.chain(left) if isinstance(left, A.BinOp) and left.op in group
+                     else self.expr(left))
+        return f'{left_text} {e.op} {self.expr(e.right)}'
+
+    def ex_Compare(self, e):
+        return f'({self.expr(e.left)} {e.op} {self.expr(e.right)})'
 
     def ex_Logic(self, e):
         return f'({self.expr(e.left)} {e.op} {self.expr(e.right)})'

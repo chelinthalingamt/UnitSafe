@@ -75,6 +75,18 @@ class RunOutputs(TableMixin, unittest.TestCase):
             ('fn f(n)\n  return f(n + 1)\nend\nprint(f(1))', '!runtime'),
         ])
 
+    def test_long_and_deep_programs(self):
+        self.run_table([
+            ('print(' + ' + '.join(['1'] * 400) + ')', '400'),
+            ('print(' + ' * '.join(['1'] * 300) + ' / 2)', '0.5'),
+            ('print(' + '(' * 60 + '1' + ')' * 60 + ')', '1'),
+            ('print(' + '(' * 400 + '1' + ')' * 400 + ')', '!P6'),
+            ('print(10 - 4 - 3)', '3'),
+            ('print(12 / 3 / 2)', '2'),
+            ('print(2 * 3 / 4 * 2)', '3'),
+            ('print(10 - (4 - 3))', '9'),
+        ])
+
     def test_empty_and_declaration_only(self):
         self.run_table([('', ''), ('unit m\nunit s', '')])
 
@@ -92,6 +104,7 @@ class GeneratorOutput(unittest.TestCase):                           # Part 9
 
     def test_brackets_and_pow_G3_G8(self):
         self.assertIn('(-math.pow(x, 2.0))', code_of('let x = 3\nlet y = -x ^ 2'))
+        self.assertIn('y = (a - b - c)', code_of('let a = 1\nlet b = 2\nlet c = 3\nlet y = a - b - c'))
 
     def test_print_forms_D23(self):
         code = code_of(UNITS + 'let a = 1 m\nprint(a)\nprint("a")\nprint("a:", a, 2)')

@@ -8,7 +8,7 @@ import sys
 from .ast_nodes import dump
 from .checker import Checker
 from .codegen import Generator
-from .errors import LexError, ParseError, format_errors
+from .errors import CompileError, LexError, ParseError, format_errors
 from .lexer import Lexer
 from .parser import Parser
 
@@ -22,18 +22,27 @@ RUNTIME_MESSAGES = {
 }
 
 
+TOO_DEEP = CompileError('P6', 1, 1, 'the program is nested too deeply; split long expressions into smaller lets')
+
+
 def compile_full(text: str, filename: str = 'program.us'):
-    """(python code or None, errors, line map)."""
+    """(python code or None, errors, line map). Never raises for a bad program."""
+    if sys.getrecursionlimit() < 4000:
+        sys.setrecursionlimit(4000)                    # room for long but reasonable expressions
     try:
-        tokens = Lexer(text).run()
-        tree = Parser(tokens).parse()
-    except (LexError, ParseError) as e:
-        return None, [e.error], {}                     # one error, stop
-    errors = Checker().run(tree)
-    if errors:
-        return None, errors, {}                        # all checker errors, no code (G6)
-    gen = Generator()
-    code = gen.run(tree, filename)
+        try:
+            tokens = Lexer(text).run()
+            tree = Parser(tokens).parse()
+        except (LexError, ParseError) as e:
+            return None, [e.error], {}                 # one error, stop
+        errors = Checker().run(tree)
+        if errors:
+            return None, errors, {}                    # all checker errors, no code (G6)
+        gen = Generator()
+        code = gen.run(tree, filename)
+        compile(code, '<unitsafe>', 'exec')            # Python has its own nesting limits
+    except (RecursionError, SyntaxError, MemoryError):
+        return None, [TOO_DEEP], {}
     return code, [], gen.line_map
 
 
