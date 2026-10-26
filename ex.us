@@ -1,0 +1,6 @@
+unit m
+unit s
+let d = 100 m
+let t = 4 s
+let v = d / t
+print("speed", v)

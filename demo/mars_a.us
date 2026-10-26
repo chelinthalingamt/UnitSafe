@@ -1,0 +1,13 @@
+# Mars Climate Orbiter, version A: the units are declared, so the mismatch cannot hide
+unit kg
+unit m
+unit s
+unit N = kg * m / s^2
+unit lbf = 4.448 N
+
+fn navigation(impulse: N * s) -> N * s
+  return impulse
+end
+
+let ground_output = 1100 lbf * s
+print("navigation receives", navigation(ground_output))
