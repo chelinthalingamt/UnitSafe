@@ -1,5 +1,4 @@
-"""Parser: tokens to tree. Recursive descent, one method per grammar line
-(build guide Part 3, P1-P6, D1-D3, D6, D10, D17, D19-D23)."""
+"""Parser: tokens to tree. Recursive descent, one method per grammar line."""
 from .ast_nodes import (Assign, Bool, BinOp, Call, CallStmt, Compare, FnDecl, If, KindDecl, Let,
                         Logic, Name, Neg, Not, Number, Param, Power, Print, PrintArg, Program,
                         Read, Return, String, UseDecl, UnitAnn, UnitDecl, UnitDiv, UnitLiteral, UnitMul,
