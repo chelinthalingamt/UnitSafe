@@ -1,7 +1,7 @@
 """The theory of the language: unit tables and the two records (build guide Part 4).
 
 A table is a tuple of (base, power) pairs, sorted by base name, with no zero
-powers, so == is always the right test (U6).
+powers (U6).
 """
 from dataclasses import dataclass
 
